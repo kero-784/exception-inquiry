@@ -4,100 +4,200 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>الاستعلام عن الاستثناءات</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* You can reuse or adapt the CSS from your generator app */
         :root {
-            --primary-color: #007bff;
+            --primary-color: #0077cc; /* Updated primary color */
             --secondary-color: #6c757d;
-            --success-color: #28a745;
+            --success-color: #198754; /* Updated success color */
             --light-color: #f8f9fa;
-            --dark-color: #343a40;
-            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --dark-color: #212529;   /* Updated dark color */
+            --border-color: #dee2e6;
+            --disabled-bg: #adb5bd;
+            --disabled-color: #6c757d;
+
+            --font-family: 'Cairo', sans-serif;
             --border-radius: 0.3rem;
+            --border-radius-lg: 0.5rem; /* Larger border radius */
+
+            --shadow-sm: 0 .125rem .25rem rgba(0,0,0,.075);
+            --shadow-md: 0 .5rem 1rem rgba(0,0,0,.12); /* Softer shadow */
         }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: var(--font-family);
-            margin: 20px;
-            background-color: #e9ecef;
+            margin: 0;
+            padding: 40px 20px; /* Added top/bottom padding */
+            background-color: #f4f7f9; /* Lighter background */
             color: var(--dark-color);
             display: flex;
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
         }
+
         .app-container {
             background-color: #fff;
-            padding: 25px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 30px 40px; /* Increased padding */
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-md);
             width: 100%;
-            max-width: 900px;
+            max-width: 950px; /* Slightly wider */
         }
+
         .app-header {
             text-align: center;
-            margin-bottom: 25px;
-            color: var(--primary-color);
-            border-bottom: 1px solid #dee2e6;
-            padding-bottom: 15px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
+            margin-bottom: 35px; /* Increased margin */
+            color: var(--dark-color); /* Stronger header color */
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            font-size: 1.8rem; /* Adjusted font size */
             font-weight: 600;
         }
+
+        .form-group {
+            margin-bottom: 25px; /* Consistent margin */
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px; /* Increased margin */
+            font-weight: 500; /* Slightly lighter than bold */
+            color: #495057;
+        }
+
         input[type="text"], select {
             width: 100%;
-            padding: 10px;
+            padding: 12px 15px; /* Increased padding */
             border: 1px solid #ced4da;
             border-radius: var(--border-radius);
             box-sizing: border-box;
             font-size: 1rem;
+            font-family: var(--font-family);
+            background-color: #fdfdff;
+            transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
         }
-        button {
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 .2rem rgba(var(--primary-color-rgb, 0,119,204),.25); /* Create --primary-color-rgb if needed or hardcode */
+            outline: 0;
+        }
+        /* Helper for focus shadow if primary color changes often */
+        /* Add this to :root if you use the rgba(var(--primary-color-rgb),.25) trick */
+        /* --primary-color-rgb: 0,119,204; */
+
+
+        .search-action-group {
+            display: flex;
+            align-items: flex-end; /* Aligns button with input field's bottom */
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .search-action-group .form-group {
+            flex-grow: 1;
+            margin-bottom: 0; /* Handled by parent gap */
+        }
+
+        .btn-primary {
             background-color: var(--primary-color);
             color: white;
-            padding: 10px 18px;
+            padding: 12px 20px;
             border: none;
             border-radius: var(--border-radius);
             cursor: pointer;
             font-size: 1rem;
+            font-family: var(--font-family);
+            font-weight: 500;
+            transition: background-color .15s ease-in-out, box-shadow .15s ease-in-out, opacity .15s ease-in-out;
+            display: inline-flex; /* For icon alignment */
+            align-items: center;
+            gap: 8px; /* Space between icon and text */
+            white-space: nowrap;
         }
-        button:hover {
-            background-color: #0056b3;
+
+        .btn-primary:hover {
+            background-color: #005ea3; /* Darker shade of primary */
+            box-shadow: var(--shadow-sm);
         }
+        .btn-primary:active {
+            background-color: #004a80; /* Even darker */
+        }
+        .btn-primary:disabled {
+            background-color: var(--disabled-bg);
+            color: var(--disabled-color);
+            cursor: not-allowed;
+            box-shadow: none;
+            opacity: 0.65;
+        }
+        .btn-primary .icon {
+             width: 1em; /* Relative to font size */
+             height: 1em; /* Relative to font size */
+        }
+
+
         #resultsTable {
             width: 100%;
-            margin-top: 20px;
+            margin-top: 30px;
             border-collapse: collapse;
+            /* box-shadow: var(--shadow-sm); Optional: shadow on table */
+            /* border-radius: var(--border-radius); Optional: if you want rounded corners for the table */
+            /* overflow: hidden; Required if using border-radius on table with border-collapse:collapse */
         }
+
         #resultsTable th, #resultsTable td {
-            border: 1px solid #dee2e6;
-            padding: 10px;
+            border-bottom: 1px solid var(--border-color);
+            padding: 12px 15px; /* Increased padding */
             text-align: right;
         }
+
         #resultsTable th {
             background-color: var(--light-color);
-            color: var(--primary-color);
+            color: var(--dark-color); /* Darker text for headers */
+            font-weight: 600;
+            border-bottom-width: 2px; /* Thicker bottom border for headers */
+            border-bottom-color: var(--primary-color);
         }
+        
+        #resultsTable tbody tr:last-child td {
+            border-bottom: none; /* No border for the last row cells */
+        }
+
+        #resultsTable tbody tr:nth-child(even) {
+            background-color: rgba(0,0,0,0.025); /* Very subtle zebra striping */
+        }
+        #resultsTable tbody tr:hover {
+            background-color: rgba(0,119,204,0.07); /* Subtle hover, using primary color with alpha */
+        }
+
+
         .message-area {
-            padding: 10px;
-            margin-top: 15px;
+            padding: 15px 20px; /* Increased padding */
+            margin-top: 20px;
             border-radius: var(--border-radius);
             text-align: center;
             border: 1px solid transparent;
+            font-size: 0.95rem;
         }
-        .message-area.info { background-color: #cce5ff; color: #004085; border-color: #b8daff;}
+        .message-area.info { background-color: #e0f3ff; color: #004085; border-color: #b8daff;}
         .message-area.error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb;}
         .message-area.no-results { background-color: #fff3cd; color: #856404; border-color: #ffeeba;}
 
-        .loader-container { text-align: center; padding: 20px; }
+        .loader-container { text-align: center; padding: 20px 0; height: 60px; /* Reserve space */ }
         .loader {
-            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color);
-            border-radius: 50%; width: 30px; height: 30px;
-            animation: spin 1s linear infinite; margin: 0 auto 10px auto;
+            border: 5px solid #f3f3f3; /* Light grey */
+            border-top: 5px solid var(--primary-color); /* Blue */
+            border-radius: 50%;
+            width: 40px; /* Slightly larger */
+            height: 40px; /* Slightly larger */
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px auto;
             display: none; /* Hidden by default */
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -114,13 +214,20 @@
                 <option value="SupplierCode">بحث بكود المورد</option>
             </select>
         </div>
-
-        <div class="form-group">
-            <label for="searchTerm">قيمة البحث:</label>
-            <input type="text" id="searchTerm" placeholder="ادخل كود الاستثناء أو كود المورد">
+        
+        <div class="search-action-group">
+            <div class="form-group" style="flex-grow: 1;"> <!-- form-group provides label spacing -->
+                <label for="searchTerm">قيمة البحث:</label>
+                <input type="text" id="searchTerm" placeholder="ادخل كود الاستثناء أو كود المورد">
+            </div>
+            <button id="searchBtn" class="btn-primary" type="button">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16" class="icon">
+                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                </svg>
+                <span>بحث</span>
+            </button>
         </div>
 
-        <button id="searchBtn">بحث</button>
         <div class="loader-container"><div class="loader" id="loader"></div></div>
         <div id="queryMessage" class="message-area" style="display:none;"></div>
 
@@ -164,7 +271,6 @@
             queryMessage.className = `message-area ${type}`;
             queryMessage.style.display = 'block';
 
-            // Enhanced console logging
             if (type === 'error') {
                 console.error(`[UI Message - ERROR]: ${message}`);
             } else if (type === 'no-results') {
@@ -183,7 +289,7 @@
             resultsTable.style.display = 'none';
             resultsHeaderRow.innerHTML = '';
             resultsBody.innerHTML = '';
-            hideMessageInquiry(); // Clears previous messages
+            hideMessageInquiry(); 
 
             console.log('[displayResults] Called. Data received:', data);
 
@@ -219,7 +325,7 @@
                             td.textContent = new Date(value).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short'});
                         } catch (e) {
                             console.warn(`[displayResults] Error formatting timestamp for record ${index}, value "${value}":`, e);
-                            td.textContent = value; // fallback
+                            td.textContent = value; 
                         }
                     } else {
                          td.textContent = (value === undefined || value === null) ? "" : value;
@@ -245,6 +351,7 @@
 
             if (!searchTerm) {
                 showMessageInquiry('الرجاء إدخال قيمة للبحث.', 'error');
+                searchTermInput.focus(); // Focus on input if empty
                 return;
             }
 
@@ -265,7 +372,7 @@
             try {
                 const response = await fetch(requestUrl, {
                     method: 'GET',
-                    mode: 'cors' // Important for cross-origin requests to GAS
+                    mode: 'cors' 
                 });
 
                 console.log('[Fetch API] Response received. Status:', response.status, 'Ok:', response.ok);
@@ -274,7 +381,6 @@
                     let errorText = `خطأ في الشبكة أو السيرفر: ${response.status} ${response.statusText}`;
                     let responseBodyForError = '';
                     try {
-                        // Attempt to get more detailed error from response body
                         const errData = await response.json();
                         console.error('[Fetch API] Parsed error response (JSON):', errData);
                         errorText = errData.error || errData.message || errorText;
@@ -284,12 +390,10 @@
                         try {
                             responseBodyForError = await response.text();
                             console.error('[Fetch API] Raw error response (Text):', responseBodyForError);
-                            // You might not want to show raw HTML/text to user, but it's good for debugging
                         } catch (textReadError) {
                             console.error('[Fetch API] Could not read error response as text either.', textReadError);
                         }
                     }
-                    // Construct a more informative error message for the user if possible
                     const finalErrorMessage = responseBodyForError ? `${errorText} (Server response: ${responseBodyForError.substring(0, 200)}${responseBodyForError.length > 200 ? '...' : ''})` : errorText;
                     throw new Error(finalErrorMessage);
                 }
@@ -300,13 +404,10 @@
                 if (result.success && result.data) {
                     console.log('[Fetch API] Success. Data to display:', result.data);
                     displayResults(result.data);
-                    if (result.data.length === 0) {
-                        // showMessageInquiry is already called by displayResults for this case
-                    }
                 } else if (result.message && !result.success) {
                     console.error('[Fetch API] Server indicated failure with message:', result.message);
                     showMessageInquiry(result.message, 'error');
-                } else { // Handles cases like { success: false, error: "..." } or unexpected structures
+                } else { 
                     const errorMessage = result.error || result.message || 'حدث خطأ غير متوقع أثناء جلب البيانات.';
                     console.error('[Fetch API] Server response indicates an issue or unexpected structure:', result);
                     showMessageInquiry(errorMessage, 'error');
