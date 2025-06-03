@@ -163,6 +163,16 @@
             queryMessage.textContent = message;
             queryMessage.className = `message-area ${type}`;
             queryMessage.style.display = 'block';
+
+            // Enhanced console logging
+            if (type === 'error') {
+                console.error(`[UI Message - ERROR]: ${message}`);
+            } else if (type === 'no-results') {
+                console.warn(`[UI Message - NO RESULTS]: ${message}`);
+            }
+            else {
+                console.info(`[UI Message - INFO]: ${message}`);
+            }
         }
 
         function hideMessageInquiry() {
@@ -173,45 +183,42 @@
             resultsTable.style.display = 'none';
             resultsHeaderRow.innerHTML = '';
             resultsBody.innerHTML = '';
-            hideMessageInquiry();
+            hideMessageInquiry(); // Clears previous messages
+
+            console.log('[displayResults] Called. Data received:', data);
 
             if (!data || data.length === 0) {
                 showMessageInquiry('لم يتم العثور على نتائج تطابق بحثك.', 'no-results');
+                console.log('[displayResults] No data or empty data array.');
                 return;
             }
 
-            // *** HEADERS MATCHING LOG_SHEET_HEADERS_CG from Google Apps Script ***
-            // This array directly corresponds to LOG_SHEET_HEADERS_CG,
-            // including the exact presence or absence of spaces in each header string.
             const headers = [
-                "Timestamp",
-                "Purchasing Officer",
-                "Entry Date",
-                "Period Start Date",
-                "Period End Date",
-                "Supplier Name",
-                "Supplier Code",
-                "Exception",
-                "Generated Code"
+                "Timestamp", "Purchasing Officer", "Entry Date",
+                "Period Start Date", "Period End Date",
+                "Supplier Name", "Supplier Code", "Exception", "Generated Code"
             ];
+            console.log('[displayResults] Using headers:', headers);
+
 
             headers.forEach(headerText => {
                 const th = document.createElement('th');
-                th.textContent = headerText; // This will be the visible header in the table
+                th.textContent = headerText;
                 resultsHeaderRow.appendChild(th);
             });
+            console.log('[displayResults] Table headers created.');
 
-            data.forEach(record => {
+            data.forEach((record, index) => {
+                console.log(`[displayResults] Processing record ${index}:`, record);
                 const tr = document.createElement('tr');
-                headers.forEach(headerKey => { // headerKey is now one of the strings from the 'headers' array
+                headers.forEach(headerKey => {
                     const td = document.createElement('td');
-                    let value = record[headerKey]; // Access data using the exact key from GAS
-
-                    // Format timestamp if it's the "Timestamp" field and an ISO string
-                    if (headerKey === "Timestamp" && typeof value === 'string' && (value.includes("T") && value.includes("Z"))) { // Check for ISO string format
+                    let value = record[headerKey];
+                    if (headerKey === "Timestamp" && typeof value === 'string' && (value.includes("T") && value.includes("Z"))) {
                         try {
                             td.textContent = new Date(value).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short'});
                         } catch (e) {
+                            console.warn(`[displayResults] Error formatting timestamp for record ${index}, value "${value}":`, e);
                             td.textContent = value; // fallback
                         }
                     } else {
@@ -222,6 +229,7 @@
                 resultsBody.appendChild(tr);
             });
             resultsTable.style.display = 'table';
+            console.log('[displayResults] Finished populating table.');
         }
 
 
@@ -232,6 +240,8 @@
             }
             const searchType = searchTypeSelect.value;
             const searchTerm = searchTermInput.value.trim();
+
+            console.log(`[Search Event] Search triggered. Type: "${searchType}", Term: "${searchTerm}"`);
 
             if (!searchTerm) {
                 showMessageInquiry('الرجاء إدخال قيمة للبحث.', 'error');
@@ -245,45 +255,73 @@
             searchBtn.disabled = true;
 
             const params = new URLSearchParams();
-            params.append('action', 'inquireData'); // New action for GAS
+            params.append('action', 'inquireData');
             params.append('searchType', searchType);
             params.append('searchTerm', searchTerm);
 
+            const requestUrl = `${GAS_WEB_APP_URL}?${params.toString()}`;
+            console.log('[Fetch API] Making GET request to:', requestUrl);
+
             try {
-                const response = await fetch(`${GAS_WEB_APP_URL}?${params.toString()}`, {
-                    method: 'GET', // Inquiry is a GET request
-                    mode: 'cors'
+                const response = await fetch(requestUrl, {
+                    method: 'GET',
+                    mode: 'cors' // Important for cross-origin requests to GAS
                 });
 
+                console.log('[Fetch API] Response received. Status:', response.status, 'Ok:', response.ok);
+
                 if (!response.ok) {
-                    let errorText = `خطأ في الشبكة أو السيرفر: ${response.status}`;
+                    let errorText = `خطأ في الشبكة أو السيرفر: ${response.status} ${response.statusText}`;
+                    let responseBodyForError = '';
                     try {
+                        // Attempt to get more detailed error from response body
                         const errData = await response.json();
+                        console.error('[Fetch API] Parsed error response (JSON):', errData);
                         errorText = errData.error || errData.message || errorText;
-                    } catch (e) { /* Could not parse JSON error */ }
-                    throw new Error(errorText);
+                        responseBodyForError = JSON.stringify(errData);
+                    } catch (jsonParseError) {
+                        console.warn('[Fetch API] Could not parse error response as JSON. Attempting to read as text.', jsonParseError);
+                        try {
+                            responseBodyForError = await response.text();
+                            console.error('[Fetch API] Raw error response (Text):', responseBodyForError);
+                            // You might not want to show raw HTML/text to user, but it's good for debugging
+                        } catch (textReadError) {
+                            console.error('[Fetch API] Could not read error response as text either.', textReadError);
+                        }
+                    }
+                    // Construct a more informative error message for the user if possible
+                    const finalErrorMessage = responseBodyForError ? `${errorText} (Server response: ${responseBodyForError.substring(0, 200)}${responseBodyForError.length > 200 ? '...' : ''})` : errorText;
+                    throw new Error(finalErrorMessage);
                 }
 
                 const result = await response.json();
+                console.log('[Fetch API] Successfully parsed JSON response:', result);
 
                 if (result.success && result.data) {
+                    console.log('[Fetch API] Success. Data to display:', result.data);
                     displayResults(result.data);
                     if (result.data.length === 0) {
-                        showMessageInquiry('لم يتم العثور على نتائج تطابق بحثك.', 'no-results');
+                        // showMessageInquiry is already called by displayResults for this case
                     }
-                } else if (result.message && !result.success) { // Handle cases where success is explicitly false
+                } else if (result.message && !result.success) {
+                    console.error('[Fetch API] Server indicated failure with message:', result.message);
                     showMessageInquiry(result.message, 'error');
-                }
-                 else {
-                    showMessageInquiry(result.error || result.message || 'حدث خطأ غير متوقع أثناء جلب البيانات.', 'error');
+                } else { // Handles cases like { success: false, error: "..." } or unexpected structures
+                    const errorMessage = result.error || result.message || 'حدث خطأ غير متوقع أثناء جلب البيانات.';
+                    console.error('[Fetch API] Server response indicates an issue or unexpected structure:', result);
+                    showMessageInquiry(errorMessage, 'error');
                 }
 
             } catch (error) {
-                console.error('Search Error:', error);
+                console.error('[Fetch API] CATCH BLOCK - An error occurred during the search operation:', error);
+                console.error('Error Name:', error.name);
+                console.error('Error Message:', error.message);
+                if(error.stack) console.error('Error Stack:', error.stack);
                 showMessageInquiry(`فشل الاستعلام: ${error.message}`, 'error');
             } finally {
                 loader.style.display = 'none';
                 searchBtn.disabled = false;
+                console.log('[Search Event] Search operation finished. UI unlocked.');
             }
         });
     </script>
