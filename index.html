@@ -139,7 +139,7 @@
     <script>
         // IMPORTANT: Use the SAME GAS_WEB_APP_URL as your code generator app,
         // as we'll add new actions to that script.
-        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw4mJLO8yXmD29uq6EaTQU5elom-NlnwcxHuNkS1ehs-t-MSL9bsa8obwFmXbt7KEmTMQ/exec'; // <<<<< SAME URL AS THE GENERATOR APP
+        const GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbywKAD0IwBqQeQqNhs8ufBpEJ12TU5TurxwVa9GH342ziGlE1ygL_-ll8Iip068zmGjaA/exec'; // <<<<< SAME URL AS THE GENERATOR APP
         const URL_PLACEHOLDER_STRING = 'YOUR_GAS_URL_PLACEHOLDER_REPLACE_ME'; // For check
 
         const searchBtn = document.getElementById('searchBtn');
@@ -180,29 +180,35 @@
                 return;
             }
 
-            // Create headers from the first record's keys
-            // Using predefined headers for consistent order and naming
+            // *** HEADERS MATCHING LOG_SHEET_HEADERS_CG from Google Apps Script ***
+            // This array directly corresponds to LOG_SHEET_HEADERS_CG,
+            // including the exact presence or absence of spaces in each header string.
             const headers = [
-                "Timestamp", "PurchasingOfficer", "EntryDate",
-                "Period Start Date", "Period End Date",
-                "SupplierName", "SupplierCode", "Exception", "GeneratedCode"
+                "Timestamp",
+                "Purchasing Officer",
+                "Entry Date",
+                "Period Start Date",
+                "Period End Date",
+                "Supplier Name",
+                "Supplier Code",
+                "Exception",
+                "Generated Code"
             ];
-            // Or dynamically: const headers = Object.keys(data[0]);
-
 
             headers.forEach(headerText => {
                 const th = document.createElement('th');
-                th.textContent = headerText;
+                th.textContent = headerText; // This will be the visible header in the table
                 resultsHeaderRow.appendChild(th);
             });
 
             data.forEach(record => {
                 const tr = document.createElement('tr');
-                headers.forEach(headerKey => {
+                headers.forEach(headerKey => { // headerKey is now one of the strings from the 'headers' array
                     const td = document.createElement('td');
-                    let value = record[headerKey];
-                    // Format timestamp if it's a string that looks like a date object string
-                    if (headerKey === "Timestamp" && typeof value === 'string' && value.includes("GMT")) {
+                    let value = record[headerKey]; // Access data using the exact key from GAS
+
+                    // Format timestamp if it's the "Timestamp" field and an ISO string
+                    if (headerKey === "Timestamp" && typeof value === 'string' && (value.includes("T") && value.includes("Z"))) { // Check for ISO string format
                         try {
                             td.textContent = new Date(value).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short'});
                         } catch (e) {
@@ -280,9 +286,6 @@
                 searchBtn.disabled = false;
             }
         });
-
-        // Initial placeholder if no search yet
-        // displayResults([]);
     </script>
 </body>
 </html>
