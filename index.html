@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الاستعلام عن الأكواد والاستثناءات</title>
+    <style>
+        /* You can reuse or adapt the CSS from your generator app */
+        :root {
+            --primary-color: #007bff;
+            --secondary-color: #6c757d;
+            --success-color: #28a745;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+            --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --border-radius: 0.3rem;
+        }
+        body {
+            font-family: var(--font-family);
+            margin: 20px;
+            background-color: #e9ecef;
+            color: var(--dark-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .app-container {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 900px;
+        }
+        .app-header {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--primary-color);
+            border-bottom: 1px solid #dee2e6;
+            padding-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: var(--border-radius);
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #resultsTable {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        #resultsTable th, #resultsTable td {
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            text-align: right;
+        }
+        #resultsTable th {
+            background-color: var(--light-color);
+            color: var(--primary-color);
+        }
+        .message-area {
+            padding: 10px;
+            margin-top: 15px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            border: 1px solid transparent;
+        }
+        .message-area.info { background-color: #cce5ff; color: #004085; border-color: #b8daff;}
+        .message-area.error { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb;}
+        .message-area.no-results { background-color: #fff3cd; color: #856404; border-color: #ffeeba;}
+
+        .loader-container { text-align: center; padding: 20px; }
+        .loader {
+            border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-color);
+            border-radius: 50%; width: 30px; height: 30px;
+            animation: spin 1s linear infinite; margin: 0 auto 10px auto;
+            display: none; /* Hidden by default */
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <h1 class="app-header">الاستعلام عن الأكواد والاستثناءات</h1>
+
+        <div class="form-group">
+            <label for="searchType">نوع البحث:</label>
+            <select id="searchType">
+                <option value="generatedCode">بحث بكود الاستثناء (الكود المولد)</option>
+                <option value="supplierCode">بحث بكود المورد</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="searchTerm">قيمة البحث:</label>
+            <input type="text" id="searchTerm" placeholder="ادخل كود الاستثناء أو كود المورد">
+        </div>
+
+        <button id="searchBtn">بحث</button>
+        <div class="loader-container"><div class="loader" id="loader"></div></div>
+        <div id="queryMessage" class="message-area" style="display:none;"></div>
+
+        <table id="resultsTable" style="display:none;">
+            <thead>
+                <tr id="resultsHeaderRow">
+                    <!-- Headers will be populated by JavaScript -->
+                </tr>
+            </thead>
+            <tbody id="resultsBody">
+                <!-- Results will be populated here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // IMPORTANT: Use the SAME GAS_WEB_APP_URL as your code generator app,
+        // as we'll add new actions to that script.
+        const GAS_WEB_APP_URL = 'YOUR_EXISTING_GAS_URL_HERE'; // <<<<< SAME URL AS THE GENERATOR APP
+        const URL_PLACEHOLDER_STRING = 'YOUR_GAS_URL_PLACEHOLDER_REPLACE_ME'; // For check
+
+        const searchBtn = document.getElementById('searchBtn');
+        const searchTypeSelect = document.getElementById('searchType');
+        const searchTermInput = document.getElementById('searchTerm');
+        const resultsTable = document.getElementById('resultsTable');
+        const resultsHeaderRow = document.getElementById('resultsHeaderRow');
+        const resultsBody = document.getElementById('resultsBody');
+        const queryMessage = document.getElementById('queryMessage');
+        const loader = document.getElementById('loader');
+
+        let criticalConfigErrorInquiry = false;
+        if (GAS_WEB_APP_URL === URL_PLACEHOLDER_STRING || GAS_WEB_APP_URL === 'YOUR_EXISTING_GAS_URL_HERE') {
+            criticalConfigErrorInquiry = true;
+            showMessageInquiry('خطأ حرج: لم يتم تكوين رابط Google Apps Script. يرجى تحديث `GAS_WEB_APP_URL` في كود HTML للاستعلام.', 'error');
+            if(searchBtn) searchBtn.disabled = true;
+        }
+
+
+        function showMessageInquiry(message, type = 'info') {
+            queryMessage.textContent = message;
+            queryMessage.className = `message-area ${type}`;
+            queryMessage.style.display = 'block';
+        }
+
+        function hideMessageInquiry() {
+            queryMessage.style.display = 'none';
+        }
+
+        function displayResults(data) {
+            resultsTable.style.display = 'none';
+            resultsHeaderRow.innerHTML = '';
+            resultsBody.innerHTML = '';
+            hideMessageInquiry();
+
+            if (!data || data.length === 0) {
+                showMessageInquiry('لم يتم العثور على نتائج تطابق بحثك.', 'no-results');
+                return;
+            }
+
+            // Create headers from the first record's keys
+            // Using predefined headers for consistent order and naming
+            const headers = [
+                "Timestamp", "Purchasing Officer", "Entry Date",
+                "Period Start Date", "Period End Date",
+                "Supplier Name", "Supplier Code", "Exception", "Generated Code"
+            ];
+            // Or dynamically: const headers = Object.keys(data[0]);
+
+
+            headers.forEach(headerText => {
+                const th = document.createElement('th');
+                th.textContent = headerText;
+                resultsHeaderRow.appendChild(th);
+            });
+
+            data.forEach(record => {
+                const tr = document.createElement('tr');
+                headers.forEach(headerKey => {
+                    const td = document.createElement('td');
+                    let value = record[headerKey];
+                    // Format timestamp if it's a string that looks like a date object string
+                    if (headerKey === "Timestamp" && typeof value === 'string' && value.includes("GMT")) {
+                        try {
+                            td.textContent = new Date(value).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short'});
+                        } catch (e) {
+                            td.textContent = value; // fallback
+                        }
+                    } else {
+                         td.textContent = (value === undefined || value === null) ? "" : value;
+                    }
+                    tr.appendChild(td);
+                });
+                resultsBody.appendChild(tr);
+            });
+            resultsTable.style.display = 'table';
+        }
+
+
+        searchBtn.addEventListener('click', async () => {
+            if (criticalConfigErrorInquiry) {
+                 showMessageInquiry('خطأ حرج في الإعداد. لا يمكن البحث.', 'error');
+                 return;
+            }
+            const searchType = searchTypeSelect.value;
+            const searchTerm = searchTermInput.value.trim();
+
+            if (!searchTerm) {
+                showMessageInquiry('الرجاء إدخال قيمة للبحث.', 'error');
+                return;
+            }
+
+            hideMessageInquiry();
+            resultsTable.style.display = 'none';
+            resultsBody.innerHTML = '';
+            loader.style.display = 'block';
+            searchBtn.disabled = true;
+
+            const params = new URLSearchParams();
+            params.append('action', 'inquireData'); // New action for GAS
+            params.append('searchType', searchType);
+            params.append('searchTerm', searchTerm);
+
+            try {
+                const response = await fetch(`${GAS_WEB_APP_URL}?${params.toString()}`, {
+                    method: 'GET', // Inquiry is a GET request
+                    mode: 'cors'
+                });
+
+                if (!response.ok) {
+                    let errorText = `خطأ في الشبكة أو السيرفر: ${response.status}`;
+                    try {
+                        const errData = await response.json();
+                        errorText = errData.error || errData.message || errorText;
+                    } catch (e) { /* Could not parse JSON error */ }
+                    throw new Error(errorText);
+                }
+
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    displayResults(result.data);
+                    if (result.data.length === 0) {
+                        showMessageInquiry('لم يتم العثور على نتائج تطابق بحثك.', 'no-results');
+                    }
+                } else if (result.message && !result.success) { // Handle cases where success is explicitly false
+                    showMessageInquiry(result.message, 'error');
+                }
+                 else {
+                    showMessageInquiry(result.error || result.message || 'حدث خطأ غير متوقع أثناء جلب البيانات.', 'error');
+                }
+
+            } catch (error) {
+                console.error('Search Error:', error);
+                showMessageInquiry(`فشل الاستعلام: ${error.message}`, 'error');
+            } finally {
+                loader.style.display = 'none';
+                searchBtn.disabled = false;
+            }
+        });
+
+        // Initial placeholder if no search yet
+        // displayResults([]);
+    </script>
+</body>
+</html>
