@@ -105,13 +105,13 @@
 </head>
 <body>
     <div class="app-container">
-        <h1 class="app-header">الاستعلام عن الأكواد والاستثناءات</h1>
+        <h1 class="app-header">الاستعلام عن الاستثناءات</h1>
 
         <div class="form-group">
             <label for="searchType">نوع البحث:</label>
             <select id="searchType">
-                <option value="generatedCode">بحث بكود الاستثناء (الكود المولد)</option>
-                <option value="Code">بحث بكود المورد</option>
+                <option value="generatedCode">بحث بكود الاستثناء</option>
+                <option value="SupplierCode">بحث بكود المورد</option>
             </select>
         </div>
 
@@ -194,7 +194,7 @@
             }
 
             const headers = [
-                "Timestamp", "Purchasing Officer", "Entry Date",
+                "Timestamp", "PurchasingOfficer", "EntryDate",
                 "Period Start Date", "Period End Date",
                 "SupplierName", "SupplierCode", "Exception", "GeneratedCode"
             ];
