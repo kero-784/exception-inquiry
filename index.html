@@ -11,6 +11,7 @@
         :root {
             --primary-color: #0077cc;
             --secondary-color: #6c757d;
+            --danger-color: #dc3545; /* Added for expired warnings */
             --success-color: #198754;
             --light-color: #f8f9fa;
             --dark-color: #212529;
@@ -28,7 +29,6 @@
             --border-radius-lg: 0.5rem;
 
             --shadow-sm: 0 .125rem .25rem rgba(0,0,0,.075);
-            /* Updated shadows for cards */
             --shadow-card: 0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.05);
             --shadow-card-hover: 0 6px 18px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.07);
         }
@@ -53,7 +53,7 @@
             background-color: #fff;
             padding: 30px 40px;
             border-radius: var(--border-radius-lg);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1); /* Keep app container shadow distinct */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             width: 100%;
             max-width: 950px;
         }
@@ -132,18 +132,18 @@
         #resultsContainer {
             display: flex;
             flex-direction: column;
-            gap: 30px; /* Increased space between cards */
+            gap: 30px;
             margin-top: 30px;
         }
 
-        /* Advanced Card Styles */
+        /* Card Styles */
         .result-card {
             background-color: var(--card-bg);
             border-radius: var(--border-radius-lg);
             box-shadow: var(--shadow-card);
-            transition: box-shadow 0.25s ease-in-out;
-            overflow: hidden; /* Important for border-left and rounded corners */
-            border-left: 5px solid var(--primary-color); /* Accent border */
+            transition: box-shadow 0.25s ease-in-out, border-left-color 0.25s ease-in-out;
+            overflow: hidden;
+            border-left: 5px solid var(--primary-color);
         }
         .result-card:hover {
             box-shadow: var(--shadow-card-hover);
@@ -155,83 +155,100 @@
             border-bottom: 1px solid var(--card-border-color);
         }
 
-        .result-card h2 { /* Title within card-header */
+        .result-card h2 {
             font-size: 1.2rem;
             font-weight: 600;
             color: var(--primary-color);
             margin: 0;
             display: flex;
             align-items: center;
-            gap: 10px; /* Space between icon and title text */
+            gap: 10px;
+            transition: color 0.25s ease-in-out;
         }
         .title-icon {
-            width: 1.2em; /* Relative to h2 font size */
+            width: 1.2em;
             height: 1.2em;
-            fill: currentColor; /* Inherits color from h2 */
+            fill: currentColor;
             flex-shrink: 0;
         }
 
         .card-body {
-            padding: 15px 25px 20px 25px; /* Top, H, Bottom, H */
+            padding: 15px 25px 20px 25px;
         }
 
         .card-field {
             display: grid;
-            grid-template-columns: minmax(140px, auto) 1fr; /* Label column (icon+text), Value column */
-            gap: 6px 12px; /* Row gap, Column gap */
-            align-items: start; /* Align items at the start of their grid area */
+            grid-template-columns: minmax(140px, auto) 1fr;
+            gap: 6px 12px;
+            align-items: start;
             padding: 10px 0;
             border-bottom: 1px dashed var(--card-border-color);
         }
         .card-field:last-child {
             border-bottom: none;
-            padding-bottom: 0; /* No extra padding at the very bottom of card */
+            padding-bottom: 0;
         }
         .card-field:first-child {
-            padding-top: 5px; /* Less padding for the first item after header */
+            padding-top: 5px;
         }
-
 
         .field-label {
             font-weight: 500;
             color: var(--label-color);
             display: flex;
             align-items: center;
-            gap: 8px; /* Space between icon and label text */
+            gap: 8px;
             font-size: 0.9rem;
             line-height: 1.5;
         }
         .field-icon {
-            width: 1.1em; /* Relative to .field-label font-size */
+            width: 1.1em;
             height: 1.1em;
             fill: var(--secondary-color);
-            flex-shrink: 0; /* Prevent icon from shrinking */
+            flex-shrink: 0;
         }
 
         .field-value {
             font-weight: 400;
             color: var(--value-color);
-            word-break: break-word; /* Ensure long unbroken strings wrap */
+            word-break: break-word;
             line-height: 1.6;
             font-size: 0.95rem;
         }
         
-        /* Special styling for the Exception field */
-        .card-field.exception-field .field-label {
-            /* align-self: start; /* If label needs to be top-aligned with multi-line value */
-        }
         .card-field.exception-field .field-value {
-            white-space: pre-wrap; /* Preserve whitespace and wrap */
-            background-color: #fdfdfd; /* Slightly different background */
+            white-space: pre-wrap;
+            background-color: #fdfdfd;
             padding: 8px 10px;
             border-radius: var(--border-radius);
-            border: 1px solid #f0f0f0; /* Very light border */
-            font-size: 0.9rem; /* Slightly smaller for potentially long text */
-            max-height: 200px; /* Example: Limit height and make scrollable */
-            overflow-y: auto; /* Add scroll if content exceeds max-height */
+            border: 1px solid #f0f0f0;
+            font-size: 0.9rem;
+            max-height: 200px;
+            overflow-y: auto;
         }
-        /* End Advanced Card Styles */
 
+        /* --- NEW CSS FOR EXPIRED WARNING --- */
+        .result-card.expired-exception {
+            border-left-color: var(--danger-color); /* A strong red color */
+            background-color: #fff8f8; /* A very light red background */
+        }
+        .result-card.expired-exception .card-header h2 {
+            color: var(--danger-color);
+        }
+        .card-body .expiry-warning {
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            border-radius: var(--border-radius);
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            font-weight: 500;
+            text-align: center;
+        }
+        /* --- END OF NEW CSS --- */
+
+
+        /* Message Area Styles */
         .message-area {
             padding: 15px 20px; margin-top: 20px; border-radius: var(--border-radius);
             text-align: center; border: 1px solid transparent; font-size: 0.95rem;
@@ -291,19 +308,18 @@
         const queryMessage = document.getElementById('queryMessage');
         const loader = document.getElementById('loader');
 
-        // SVG Icons mapping
         const fieldIcons = {
-            default: '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.19-.257a.34.34 0 0 0 .255-.248c.063-.24.018-.488-.134-.646-.152-.158-.382-.198-.593-.04L7.07 7.293l.282.282c.106.105.222.19.352.237.13.048.27.06.41.03S10.248 7.69 10.1 7.69c-.032.006-.05.014-.064.024zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>', // Generic Info icon
-            title: '<svg class="title-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M12.5 0H3.5A1.5 1.5 0 0 0 2 1.5v13A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 12.5 0zm-10 1.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v13a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-13z"/><path d="M9.5 3h-3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3h-3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm-3.5 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z"/></svg>', // Document icon for title
+            default: '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.19-.257a.34.34 0 0 0 .255-.248c.063-.24.018-.488-.134-.646-.152-.158-.382-.198-.593-.04L7.07 7.293l.282.282c.106.105.222.19.352.237.13.048.27.06.41.03S10.248 7.69 10.1 7.69c-.032.006-.05.014-.064.024zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>',
+            title: '<svg class="title-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M12.5 0H3.5A1.5 1.5 0 0 0 2 1.5v13A1.5 1.5 0 0 0 3.5 16h9a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 12.5 0zm-10 1.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 .5.5v13a.5.5 0 0 1-.5.5h-9a.5.5 0 0 1-.5-.5v-13z"/><path d="M9.5 3h-3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm0 3h-3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zm-3.5 3a.5.5 0 0 0 0 1h1a.5.5 0 0 0 0-1h-1z"/></svg>',
             GeneratedCode: '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M6 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-1.5 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0z"/><path d="M2 1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 1 6.586V2a1 1 0 0 1 1-1zm0 5.586 7 7L13.586 9l-7-7H2v4.586z"/></svg>',
-            Timestamp: '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>', // Clock icon
+            Timestamp: '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg>',
             PurchasingOfficer: '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/></svg>',
             EntryDate: '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>',
-            "Period Start Date": '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1zM12 7a.5.5 0 0 0-.5-.5H4.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 .5-.5z"/></svg>', // Calendar with a line (start)
-            "Period End Date": '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1zm2.5 6a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"/></svg>', // Calendar with a line (end)
-            SupplierName: '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h11A1.5 1.5 0 0 1 15 2.5V5h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1V2.5zM2.5 2a.5.5 0 0 0-.5.5V5h11V2.5a.5.5 0 0 0-.5-.5h-11zM14 7H2v6.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V7zM3 8.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/></svg>', // Storefront/building icon
-            SupplierCode: '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/><path fill-rule="evenodd" d="M1.646 2.646a.5.5 0 0 1 .708 0L8 8.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>', // Code bars / hash
-            Exception: '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>' // Warning/Exception icon
+            "Period Start Date": '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1zM12 7a.5.5 0 0 0-.5-.5H4.5a.5.5 0 0 0 0 1h7a.5.5 0 0 0 .5-.5z"/></svg>',
+            "Period End Date": '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1zm2.5 6a.5.5 0 0 0 0 1h7a.5.5 0 0 0 0-1h-7z"/></svg>',
+            SupplierName: '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h11A1.5 1.5 0 0 1 15 2.5V5h.5a.5.5 0 0 1 0 1H.5a.5.5 0 0 1 0-1H1V2.5zM2.5 2a.5.5 0 0 0-.5.5V5h11V2.5a.5.5 0 0 0-.5-.5h-11zM14 7H2v6.5A1.5 1.5 0 0 0 3.5 15h9a1.5 1.5 0 0 0 1.5-1.5V7zM3 8.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/></svg>',
+            SupplierCode: '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/><path fill-rule="evenodd" d="M1.646 2.646a.5.5 0 0 1 .708 0L8 8.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg>',
+            Exception: '<svg class="field-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>'
         };
 
         let criticalConfigErrorInquiry = false;
@@ -317,15 +333,13 @@
             queryMessage.textContent = message;
             queryMessage.className = `message-area ${type}`;
             queryMessage.style.display = 'block';
-            if (type === 'error') console.error(`[UI Message - ERROR]: ${message}`);
-            else if (type === 'no-results') console.warn(`[UI Message - NO RESULTS]: ${message}`);
-            else console.info(`[UI Message - INFO]: ${message}`);
         }
 
         function hideMessageInquiry() {
             queryMessage.style.display = 'none';
         }
 
+        // --- UPDATED displayResults FUNCTION ---
         function displayResults(data) {
             resultsContainer.innerHTML = '';
             resultsContainer.style.display = 'none';
@@ -352,8 +366,30 @@
 
             data.forEach((record, index) => {
                 console.log(`[displayResults] Processing record ${index}:`, record);
+                
+                // --- NEW LOGIC: Check if the exception has expired ---
+                let expiryWarningHtml = '';
+                let cardExtraClass = '';
+                const endDateString = record["Period End Date"];
+
+                if (endDateString) {
+                    const endDate = new Date(endDateString);
+                    const today = new Date();
+                    // Set today to midnight to compare only the date part.
+                    today.setHours(0, 0, 0, 0); 
+
+                    if (!isNaN(endDate.getTime()) && endDate < today) {
+                        // If the end date is *before* today, it's expired.
+                        expiryWarningHtml = `<div class="expiry-warning">تنبيه: فترة هذا الاستثناء قد انتهت.</div>`;
+                        cardExtraClass = 'expired-exception';
+                        console.log(`Record ${index} (Code: ${record.GeneratedCode}) is EXPIRED.`);
+                    }
+                }
+                // --- END OF NEW LOGIC ---
+
                 const card = document.createElement('div');
-                card.className = 'result-card';
+                // Apply the new class if the exception is expired
+                card.className = `result-card ${cardExtraClass}`;
 
                 const cardTitleText = record.GeneratedCode 
                                     ? `بيانات الاستثناء (الكود: ${record.GeneratedCode})`
@@ -367,16 +403,18 @@
                         const iconSvg = fieldIcons[key] || fieldIcons.default;
                         const fieldClass = key === "Exception" ? "card-field exception-field" : "card-field";
 
-
-                        if (key === "Timestamp" && typeof value === 'string' && (value.includes("T") && value.includes("Z"))) {
-                            try { value = new Date(value).toLocaleString('ar-EG', { dateStyle: 'full', timeStyle: 'medium'}); } catch (e) { console.warn(`Err format TS for ${key}`); }
-                        } else if (key === "EntryDate" || key === "Period Start Date" || key === "Period End Date") {
-                            if (value) {
-                                try {
-                                    if (typeof value === 'string' && value.includes("T") && value.includes("Z")) { value = new Date(value).toLocaleDateString('ar-EG', { dateStyle: 'full' }); }
-                                    else if (value instanceof Date) { value = value.toLocaleDateString('ar-EG', { dateStyle: 'full' }); }
-                                    else if (typeof value === 'string' && !isNaN(new Date(value).getTime())) { value = new Date(value).toLocaleDateString('ar-EG', { dateStyle: 'full' }); }
-                                } catch (e) { console.warn(`Err format Date for ${key}`);}
+                        const dateKeys = ["Timestamp", "EntryDate", "Period Start Date", "Period End Date"];
+                        if (dateKeys.includes(key) && value) {
+                            try {
+                                const dateObj = new Date(value);
+                                if (!isNaN(dateObj.getTime())) { 
+                                    const day = String(dateObj.getDate()).padStart(2, '0');
+                                    const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+                                    const year = dateObj.getFullYear();
+                                    value = `${day}-${month}-${year}`;
+                                }
+                            } catch (e) {
+                                console.warn(`Could not format date for key "${key}" with value "${value}"`, e);
                             }
                         }
                         
@@ -396,6 +434,7 @@
                         <h2>${fieldIcons.title} ${cardTitleText}</h2>
                     </div>
                     <div class="card-body">
+                        ${expiryWarningHtml} <!-- The warning message is injected here! -->
                         ${cardFieldsHtml}
                     </div>
                 `;
